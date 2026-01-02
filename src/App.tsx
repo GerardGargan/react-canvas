@@ -1,9 +1,13 @@
+import { ComponentExample } from "@/components/component-example";
+import { Route, Routes } from "react-router";
+
 export function App() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="font-medium">Hello World</div>
-    </div>
-  )
+    <Routes>
+      <Route path="/" element={<ComponentExample />} />
+      <Route path="*" element={<>Not found</>} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
