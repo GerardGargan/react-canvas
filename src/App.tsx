@@ -1,10 +1,10 @@
-import { ComponentExample } from "@/components/component-example";
 import { Route, Routes } from "react-router";
+import Fishbone from "./pages/fishbone";
 
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<ComponentExample />} />
+      <Route path="/" element={<Fishbone />} />
       <Route path="*" element={<>Not found</>} />
     </Routes>
   );
