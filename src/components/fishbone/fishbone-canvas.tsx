@@ -1,11 +1,5 @@
 import { categories } from "@/data/categories";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent,
-  type WheelEvent,
-} from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 function FishboneCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,6 +35,7 @@ function FishboneCanvas() {
         containerHeight / 1000,
         1
       );
+      console.log(initialScale);
 
       const fishboneCenterX = (spineStartX + spineEndX) / 2;
       const fishboneCenterY = spineY;
@@ -52,24 +47,33 @@ function FishboneCanvas() {
     }
   }, []);
 
-  const onWheel = (e: WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
-
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    if (e.ctrlKey) {
-      const delta = e.deltaY > 0 ? 0.98 : 1.02;
-      const newScale = Math.min(Math.max(transform.scale * delta, 0.3), 2);
-      setTransform((prev) => {
-        return { ...prev, scale: newScale };
-      });
-    } else {
-      setTransform((prev) => {
-        return { ...prev, x: prev.x - e.deltaX, y: prev.y - e.deltaY };
-      });
-    }
-  };
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault(); // block browser zoom
+
+        const delta = e.deltaY > 0 ? 0.98 : 1.02;
+        setTransform((prev) => ({
+          ...prev,
+          scale: Math.min(Math.max(prev.scale * delta, 0.3), 2),
+        }));
+      } else {
+        setTransform((prev) => ({
+          ...prev,
+          x: prev.x - e.deltaX,
+          y: prev.y - e.deltaY,
+        }));
+      }
+    };
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
 
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     setIsPanning(true);
@@ -94,7 +98,6 @@ function FishboneCanvas() {
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseMove={onMouseMove}
-      onWheel={onWheel}
     >
       <div
         className="w-full h-full cursor-grab active:cursor-grabbing relative"
