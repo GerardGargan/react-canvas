@@ -148,27 +148,49 @@ function FishboneCanvas() {
           />
 
           {topCateogries.map((c, i) => (
-            <line
-              key={c.category}
-              x1={200 + 250 * i}
-              y1={spineY - branchLength}
-              x2={350 + 250 * i}
-              y2={spineY}
-              className="stroke-current"
-              strokeWidth={2}
-            />
+            <g key={i}>
+              <line
+                key={c.category}
+                x1={200 + 250 * i}
+                y1={spineY - branchLength}
+                x2={350 + 250 * i}
+                y2={spineY}
+                className="stroke-current"
+                strokeWidth={2}
+              />
+              <text
+                x={200 + 250 * i - 20}
+                y={spineY - branchLength - 10}
+                fontSize="14"
+                fill="black"
+                fontWeight="500"
+              >
+                {c.category}
+              </text>
+            </g>
           ))}
 
           {bottomCategories.map((c, i) => (
-            <line
-              key={c.category}
-              x1={200 + 250 * i}
-              y1={spineY + branchLength}
-              x2={350 + 250 * i}
-              y2={spineY}
-              className="stroke-current"
-              strokeWidth={2}
-            />
+            <g key={i}>
+              <line
+                key={c.category}
+                x1={200 + 250 * i}
+                y1={spineY + branchLength}
+                x2={350 + 250 * i}
+                y2={spineY}
+                className="stroke-current"
+                strokeWidth={2}
+              />
+              <text
+                x={200 + 250 * i - 20}
+                y={spineY + branchLength + 20}
+                fontSize="14"
+                fill="black"
+                fontWeight="500"
+              >
+                {c.category}
+              </text>
+            </g>
           ))}
         </svg>
       </div>
