@@ -1,3 +1,4 @@
+import { categories } from "@/data/categories";
 import {
   useEffect,
   useRef,
@@ -13,6 +14,21 @@ function FishboneCanvas() {
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
   const [centerY, setCenterY] = useState(500);
 
+  const branchLength = 250;
+
+  const topCateogries = categories.filter(
+    (x) =>
+      x.category === "Man" ||
+      x.category === "Machine" ||
+      x.category === "Measurement"
+  );
+  const bottomCategories = categories.filter(
+    (x) =>
+      x.category === "Material" ||
+      x.category === "Environment" ||
+      x.category === "Method"
+  );
+
   useEffect(() => {
     if (containerRef.current) {
       setCenterY(containerRef.current.clientHeight / 2);
@@ -26,11 +42,17 @@ function FishboneCanvas() {
     const container = containerRef.current;
     if (!container) return;
 
-    const delta = e.deltaY > 0 ? 0.98 : 1.02;
-    const newScale = Math.min(Math.max(transform.scale * delta, 0.3), 2);
-    setTransform((prev) => {
-      return { ...prev, scale: newScale };
-    });
+    if (e.ctrlKey) {
+      const delta = e.deltaY > 0 ? 0.98 : 1.02;
+      const newScale = Math.min(Math.max(transform.scale * delta, 0.3), 2);
+      setTransform((prev) => {
+        return { ...prev, scale: newScale };
+      });
+    } else {
+      setTransform((prev) => {
+        return { ...prev, x: prev.x - e.deltaX, y: prev.y - e.deltaY };
+      });
+    }
   };
 
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
@@ -100,8 +122,35 @@ function FishboneCanvas() {
               strokeLinecap="round"
             />
 
-            {/* Arrow head */}
-            <polygon points={`1000,100 980,1000 980,1000`} fill="black" />
+            {/* Head */}
+            <polygon
+              points={`1010,${centerY} 980,${centerY - 10} 980,${centerY + 10}`}
+              fill="black"
+            />
+
+            {topCateogries.map((c, i) => (
+              <line
+                key={c.category}
+                x1={200 + 250 * i}
+                y1={centerY - branchLength}
+                x2={350 + 250 * i}
+                y2={centerY}
+                className="stroke-current"
+                strokeWidth={2}
+              />
+            ))}
+
+            {bottomCategories.map((c, i) => (
+              <line
+                key={c.category}
+                x1={200 + 250 * i}
+                y1={centerY + branchLength}
+                x2={350 + 250 * i}
+                y2={centerY}
+                className="stroke-current"
+                strokeWidth={2}
+              />
+            ))}
           </svg>
         </div>
       </div>
