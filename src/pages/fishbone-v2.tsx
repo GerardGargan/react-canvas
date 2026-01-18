@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { GrapeIcon } from "lucide-react";
+import { GrapeIcon, Minus, Plus } from "lucide-react";
 import {
   createContext,
   useContext,
@@ -12,17 +12,16 @@ import {
 
 export default function FishboneV2() {
   return (
-    <div className="h-screen flex flex-col">
-      <Canvas>
+    <div className="h-screen flex flex-col relative">
+      <CanvasProvider>
         <CanvasHeader title="test">
           <CanvasAction>
             <Button>Test</Button>
           </CanvasAction>
         </CanvasHeader>
-        <CanvasArea>
-          <></>
-        </CanvasArea>
-      </Canvas>
+        <CanvasToolbar />
+        <CanvasArea></CanvasArea>
+      </CanvasProvider>
     </div>
   );
 }
@@ -34,6 +33,8 @@ type CanvasContextType = {
   setIsPanning: (value: boolean) => void;
   handleMouseDown: (e: MouseEvent<HTMLDivElement>) => void;
   handleMouseMove: (e: MouseEvent<HTMLDivElement>) => void;
+  handleZoomIn: (increment: number) => void;
+  handleZoomOut: (increment: number) => void;
 };
 
 type Transform = {
@@ -53,7 +54,7 @@ function useCanvasContext() {
   return context;
 }
 
-function Canvas({ children }: { children: ReactNode }) {
+function CanvasProvider({ children }: { children: ReactNode }) {
   const [transform, setTransform] = useState<Transform>({
     x: 0,
     y: 0,
@@ -75,6 +76,20 @@ function Canvas({ children }: { children: ReactNode }) {
     });
   }
 
+  function handleZoomIn(increment: number) {
+    setTransform((prev) => {
+      const newScale = Math.min(prev.scale + increment, 2);
+      return { ...prev, scale: newScale };
+    });
+  }
+
+  function handleZoomOut(increment: number) {
+    setTransform((prev) => {
+      const newScale = Math.max(prev.scale - increment, 0.5);
+      return { ...prev, scale: newScale };
+    });
+  }
+
   return (
     <CanvasContext
       value={{
@@ -84,6 +99,8 @@ function Canvas({ children }: { children: ReactNode }) {
         handleMouseMove,
         setIsPanning,
         isPanning,
+        handleZoomIn,
+        handleZoomOut,
       }}
     >
       {children}
@@ -91,7 +108,7 @@ function Canvas({ children }: { children: ReactNode }) {
   );
 }
 
-function CanvasArea({ children }: { children: ReactNode }) {
+function CanvasArea({ children }: { children?: ReactNode }) {
   const { handleMouseDown, handleMouseMove, setIsPanning, transform } =
     useCanvasContext();
 
@@ -119,7 +136,7 @@ function CanvasArea({ children }: { children: ReactNode }) {
             backgroundSize: "24px 24px",
           }}
         />
-        {children}
+        {children && children}
       </div>
     </div>
   );
@@ -153,5 +170,23 @@ function CanvasAction({ className, ...props }: ComponentProps<"div">) {
       className={cn("col-start-2 justify-self-end", className)}
       {...props}
     />
+  );
+}
+
+function CanvasToolbar() {
+  const { handleZoomIn, handleZoomOut } = useCanvasContext();
+
+  return (
+    <div
+      data-slot="canvas-toolbar"
+      className="absolute top-20 left-5 border rounded-md flex flex-col z-10 bg-gray-200 p-1 gap-2"
+    >
+      <Button variant="outline" onClick={() => handleZoomIn(0.1)}>
+        <Plus />
+      </Button>
+      <Button variant="outline" onClick={() => handleZoomOut(0.1)}>
+        <Minus />
+      </Button>
+    </div>
   );
 }
