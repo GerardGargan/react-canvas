@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { GrapeIcon, Minus, Plus } from "lucide-react";
+import { Download, GrapeIcon, Minus, Plus } from "lucide-react";
 import {
   createContext,
   useContext,
@@ -16,10 +16,14 @@ export default function FishboneV2() {
       <CanvasProvider>
         <CanvasHeader title="test">
           <CanvasAction>
-            <Button>Test</Button>
+            <Button className="space-x-1">
+              <Download />
+              <p>Export</p>
+            </Button>
           </CanvasAction>
         </CanvasHeader>
         <CanvasToolbar />
+        <CanvasZoomInfo />
         <CanvasArea></CanvasArea>
       </CanvasProvider>
     </div>
@@ -114,7 +118,7 @@ function CanvasArea({ children }: { children?: ReactNode }) {
 
   return (
     <div
-      className="relative h-full overflow-hidden bg-background"
+      className="relative h-full overflow-hidden bg-gray-100"
       onMouseDown={handleMouseDown}
       onMouseUp={() => setIsPanning(false)}
       onMouseMove={handleMouseMove}
@@ -132,7 +136,7 @@ function CanvasArea({ children }: { children?: ReactNode }) {
             height: "5000px",
             top: "-1000px",
             left: "-1000px",
-            backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(#99a1af 1px, transparent 1px)",
             backgroundSize: "24px 24px",
           }}
         />
@@ -179,7 +183,7 @@ function CanvasToolbar() {
   return (
     <div
       data-slot="canvas-toolbar"
-      className="absolute top-20 left-5 border rounded-md flex flex-col z-10 bg-gray-200 p-1 gap-2"
+      className="absolute top-20 left-5 border rounded-md flex flex-col z-10 bg-card py-2 px-1 gap-2 shadow-md"
     >
       <Button variant="outline" onClick={() => handleZoomIn(0.1)}>
         <Plus />
@@ -187,6 +191,19 @@ function CanvasToolbar() {
       <Button variant="outline" onClick={() => handleZoomOut(0.1)}>
         <Minus />
       </Button>
+    </div>
+  );
+}
+
+function CanvasZoomInfo() {
+  const { transform } = useCanvasContext();
+  const scalePercentage = Math.round(transform.scale * 100) + "%";
+  return (
+    <div
+      data-slot="canvas-zoom-info"
+      className="absolute bottom-5 right-5 rounded-md bg-card py-1 px-2 text-xs z-10 shadow-md"
+    >
+      {scalePercentage}
     </div>
   );
 }
