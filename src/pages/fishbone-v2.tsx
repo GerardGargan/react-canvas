@@ -24,7 +24,18 @@ export default function FishboneV2() {
         </CanvasHeader>
         <CanvasToolbar />
         <CanvasZoomInfo />
-        <CanvasArea></CanvasArea>
+        <CanvasArea>
+          <svg className="relative h-full w-full">
+            <line
+              stroke="black"
+              strokeWidth={3}
+              x1={100}
+              x2={1000}
+              y1={100}
+              y2={100}
+            />
+          </svg>
+        </CanvasArea>
       </CanvasProvider>
     </div>
   );
