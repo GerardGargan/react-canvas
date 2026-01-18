@@ -16,13 +16,13 @@ function FishboneCanvas() {
     (x) =>
       x.category === "Man" ||
       x.category === "Machine" ||
-      x.category === "Measurement"
+      x.category === "Measurement",
   );
   const bottomCategories = categories.filter(
     (x) =>
       x.category === "Material" ||
       x.category === "Environment" ||
-      x.category === "Method"
+      x.category === "Method",
   );
 
   useEffect(() => {
@@ -33,7 +33,7 @@ function FishboneCanvas() {
       const initialScale = Math.min(
         containerWidth / 1200,
         containerHeight / 1000,
-        1
+        1,
       );
       console.log(initialScale);
 
@@ -93,7 +93,7 @@ function FishboneCanvas() {
 
   return (
     <div
-      className="relative h-full flex-1 overflow-hidden bg-gray-100"
+      className="h-full flex-1 overflow-hidden bg-gray-100"
       ref={containerRef}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
