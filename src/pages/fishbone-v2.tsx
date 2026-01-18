@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { GrapeIcon } from "lucide-react";
 import {
   createContext,
   useContext,
   useState,
+  type ComponentProps,
   type MouseEvent,
   type ReactNode,
 } from "react";
@@ -12,7 +14,11 @@ export default function FishboneV2() {
   return (
     <div className="h-screen flex flex-col">
       <Canvas>
-        <CanvasHeader title="test" />
+        <CanvasHeader title="test">
+          <CanvasAction>
+            <Button>Test</Button>
+          </CanvasAction>
+        </CanvasHeader>
         <CanvasArea>
           <></>
         </CanvasArea>
@@ -99,7 +105,7 @@ function CanvasArea({ children }: { children: ReactNode }) {
       <div
         className="h-full w-full relative cursor-grab active:cursor-grabbing"
         style={{
-          transform: `translate(${transform.x}px, ${transform.y}px)`,
+          transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
         }}
       >
         <div
@@ -119,11 +125,33 @@ function CanvasArea({ children }: { children: ReactNode }) {
   );
 }
 
-function CanvasHeader({ title }: { title: string }) {
+function CanvasHeader({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
-    <div className="flex justify-between items-center border-b bg-card py-2 px-3">
-      <GrapeIcon className="h-7 w-7 bg-gray-200 rounded-sm p-1" />
-      <Button>Test</Button>
+    <div
+      data-slot="canvas-header"
+      className="grid border-b bg-card py-2 px-3 has-data-[slot=canvas-action]:grid-cols-2"
+    >
+      <span className="flex items-center space-x-2">
+        <GrapeIcon className="h-7 w-7 bg-gray-200 rounded-sm p-1" />
+        <p>{title}</p>
+      </span>
+      {children}
     </div>
+  );
+}
+
+function CanvasAction({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="canvas-action"
+      className={cn("col-start-2 justify-self-end", className)}
+      {...props}
+    />
   );
 }
