@@ -9,8 +9,6 @@ import type {
 import {
   Download,
   GrapeIcon,
-  Minus,
-  Plus,
   RectangleHorizontal,
   ZoomIn,
   ZoomOut,
@@ -23,6 +21,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
+import { twMerge } from "tailwind-merge";
 
 export default function Canvas() {
   return (
@@ -51,12 +50,14 @@ type CanvasContextType = {
   startPan: StartPan;
   isPanning: boolean;
   elements: CanvasElement[];
+  selectedElement: string | null;
   handleAddElement: (elementType: CanvasElementType) => void;
   setIsPanning: (value: boolean) => void;
   handleMouseDown: (e: MouseEvent<HTMLDivElement>) => void;
   handleMouseMove: (e: MouseEvent<HTMLDivElement>) => void;
   handleZoomIn: (increment: number) => void;
   handleZoomOut: (increment: number) => void;
+  setSelectedElement: (id: string | null) => void;
 };
 
 type StartPan = Omit<Transform, "scale">;
@@ -79,6 +80,7 @@ function CanvasProvider({ children }: { children: ReactNode }) {
   const [startPan, setStartPan] = useState<StartPan>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [elements, setElements] = useState<CanvasElement[]>([]);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
 
   function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
     setStartPan({ x: e.clientX - transform.x, y: e.clientY - transform.y });
@@ -125,14 +127,16 @@ function CanvasProvider({ children }: { children: ReactNode }) {
       value={{
         transform,
         startPan,
+        isPanning,
+        elements,
+        selectedElement,
         handleMouseDown,
         handleMouseMove,
         setIsPanning,
-        isPanning,
         handleZoomIn,
         handleZoomOut,
-        elements,
         handleAddElement,
+        setSelectedElement,
       }}
     >
       {children}
@@ -181,16 +185,29 @@ function CanvasElements() {
   return (
     <>
       {elements.map((e) => (
-        <CanvasElementView element={e} />
+        <CanvasElementView element={e} key={e.id} />
       ))}
     </>
   );
 }
 
 function CanvasElementView({ element }: { element: CanvasElement }) {
+  const { selectedElement, setSelectedElement } = useCanvasContext();
+
+  const isSelected = selectedElement === element.id;
+
+  function handleSelect() {
+    if (isSelected) return setSelectedElement(null);
+    setSelectedElement(element.id);
+  }
+
   return (
     <div
-      className="absolute border-2 z-2"
+      data-slot="canvas-element"
+      className={twMerge(
+        "absolute border-2 rounded-xl z-1 p-1",
+        isSelected && "ring-2 ring-blue-500",
+      )}
       style={{
         top: element.y,
         left: element.x,
@@ -198,8 +215,9 @@ function CanvasElementView({ element }: { element: CanvasElement }) {
         width: element.width,
         backgroundColor: element.colour,
       }}
+      onClick={handleSelect}
     >
-      Canvas Element
+      Rectangle
     </div>
   );
 }
