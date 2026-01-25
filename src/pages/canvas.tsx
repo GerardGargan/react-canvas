@@ -1,6 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Download, GrapeIcon, Minus, Plus } from "lucide-react";
+import type {
+  CanvasElement,
+  CanvasElementType,
+  Transform,
+} from "@/types/canvas";
+import {
+  Download,
+  GrapeIcon,
+  Minus,
+  Plus,
+  RectangleHorizontal,
+} from "lucide-react";
 import {
   createContext,
   useContext,
@@ -10,7 +21,7 @@ import {
   type ReactNode,
 } from "react";
 
-export default function FishboneV2() {
+export default function Canvas() {
   return (
     <div className="h-screen flex flex-col relative">
       <CanvasProvider>
@@ -25,16 +36,7 @@ export default function FishboneV2() {
         <CanvasToolbar />
         <CanvasZoomInfo />
         <CanvasArea>
-          <svg className="relative h-full w-full">
-            <line
-              stroke="black"
-              strokeWidth={3}
-              x1={100}
-              x2={1000}
-              y1={100}
-              y2={100}
-            />
-          </svg>
+          <CanvasElements />
         </CanvasArea>
       </CanvasProvider>
     </div>
@@ -45,17 +47,13 @@ type CanvasContextType = {
   transform: Transform;
   startPan: StartPan;
   isPanning: boolean;
+  elements: CanvasElement[];
+  handleAddElement: (elementType: CanvasElementType) => void;
   setIsPanning: (value: boolean) => void;
   handleMouseDown: (e: MouseEvent<HTMLDivElement>) => void;
   handleMouseMove: (e: MouseEvent<HTMLDivElement>) => void;
   handleZoomIn: (increment: number) => void;
   handleZoomOut: (increment: number) => void;
-};
-
-type Transform = {
-  x: number;
-  y: number;
-  scale: number;
 };
 
 type StartPan = Omit<Transform, "scale">;
@@ -77,6 +75,7 @@ function CanvasProvider({ children }: { children: ReactNode }) {
   });
   const [startPan, setStartPan] = useState<StartPan>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
+  const [elements, setElements] = useState<CanvasElement[]>([]);
 
   function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
     setStartPan({ x: e.clientX - transform.x, y: e.clientY - transform.y });
@@ -105,6 +104,19 @@ function CanvasProvider({ children }: { children: ReactNode }) {
     });
   }
 
+  function handleAddElement(elementType: CanvasElementType) {
+    const element: CanvasElement = {
+      id: Math.random().toString(36).substring(2, 9),
+      colour: "white",
+      height: 100,
+      width: 200,
+      elementType,
+      x: 500,
+      y: 500,
+    };
+    setElements((prev) => [...prev, element]);
+  }
+
   return (
     <CanvasContext
       value={{
@@ -116,6 +128,8 @@ function CanvasProvider({ children }: { children: ReactNode }) {
         isPanning,
         handleZoomIn,
         handleZoomOut,
+        elements,
+        handleAddElement,
       }}
     >
       {children}
@@ -157,6 +171,36 @@ function CanvasArea({ children }: { children?: ReactNode }) {
   );
 }
 
+function CanvasElements() {
+  const context = useCanvasContext();
+  const elements = context.elements;
+
+  return (
+    <>
+      {elements.map((e) => (
+        <CanvasElementView element={e} />
+      ))}
+    </>
+  );
+}
+
+function CanvasElementView({ element }: { element: CanvasElement }) {
+  return (
+    <div
+      className="absolute border-2 z-2"
+      style={{
+        top: element.y,
+        left: element.x,
+        height: element.height,
+        width: element.width,
+        backgroundColor: element.colour,
+      }}
+    >
+      Canvas Element
+    </div>
+  );
+}
+
 function CanvasHeader({
   title,
   children,
@@ -189,7 +233,7 @@ function CanvasAction({ className, ...props }: ComponentProps<"div">) {
 }
 
 function CanvasToolbar() {
-  const { handleZoomIn, handleZoomOut } = useCanvasContext();
+  const { handleZoomIn, handleZoomOut, handleAddElement } = useCanvasContext();
 
   return (
     <div
@@ -201,6 +245,9 @@ function CanvasToolbar() {
       </Button>
       <Button variant="outline" onClick={() => handleZoomOut(0.1)}>
         <Minus />
+      </Button>
+      <Button variant="outline" onClick={() => handleAddElement("Rectangle")}>
+        <RectangleHorizontal />
       </Button>
     </div>
   );
