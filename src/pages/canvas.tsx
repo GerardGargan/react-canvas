@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type {
   CanvasElement,
@@ -11,6 +12,8 @@ import {
   Minus,
   Plus,
   RectangleHorizontal,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import {
   createContext,
@@ -25,7 +28,7 @@ export default function Canvas() {
   return (
     <div className="h-screen flex flex-col relative">
       <CanvasProvider>
-        <CanvasHeader title="test">
+        <CanvasHeader title="Canvas">
           <CanvasAction>
             <Button className="space-x-1">
               <Download />
@@ -233,21 +236,25 @@ function CanvasAction({ className, ...props }: ComponentProps<"div">) {
 }
 
 function CanvasToolbar() {
-  const { handleZoomIn, handleZoomOut, handleAddElement } = useCanvasContext();
+  const { handleZoomIn, handleZoomOut, handleAddElement, transform } =
+    useCanvasContext();
+  const scalePercentage = Math.round(transform.scale * 100) + "%";
 
   return (
     <div
       data-slot="canvas-toolbar"
-      className="absolute top-20 left-5 border rounded-md flex flex-col z-10 bg-card py-2 px-1 gap-2 shadow-md"
+      className="absolute bottom-10 left-1/2 -translate-x-1/2 border rounded-md flex items-center z-1 bg-card py-2 px-2 gap-2 shadow-md"
     >
-      <Button variant="outline" onClick={() => handleZoomIn(0.1)}>
-        <Plus />
-      </Button>
-      <Button variant="outline" onClick={() => handleZoomOut(0.1)}>
-        <Minus />
-      </Button>
-      <Button variant="outline" onClick={() => handleAddElement("Rectangle")}>
+      <Button variant="ghost" onClick={() => handleAddElement("Rectangle")}>
         <RectangleHorizontal />
+      </Button>
+      <Separator orientation="vertical" />
+      <Button variant="ghost" onClick={() => handleZoomIn(0.1)}>
+        <ZoomIn />
+      </Button>
+      <p className="text-xs">{scalePercentage}</p>
+      <Button variant="ghost" onClick={() => handleZoomOut(0.1)}>
+        <ZoomOut />
       </Button>
     </div>
   );
