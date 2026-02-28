@@ -9,6 +9,7 @@ import { GrapeIcon, RectangleHorizontal, ZoomIn, ZoomOut } from "lucide-react";
 import {
   createContext,
   useContext,
+  useRef,
   useState,
   type ComponentProps,
   type MouseEvent,
@@ -22,14 +23,21 @@ type CanvasContextType = {
   startPan: StartPan;
   isPanning: boolean;
   elements: CanvasElement[];
-  selectedElement: string | null;
+  selectedElement: CanvasElement | null;
   handleAddElement: (elementType: CanvasElementType) => void;
-  setIsPanning: (value: boolean) => void;
+  setSelectedElement: React.Dispatch<
+    React.SetStateAction<CanvasElement | null>
+  >;
+  handleElementMouseDown: (
+    e: MouseEvent<HTMLDivElement>,
+    element: CanvasElement,
+  ) => void;
+  setIsPanning: React.Dispatch<React.SetStateAction<boolean>>;
   handleMouseDown: (e: MouseEvent<HTMLDivElement>) => void;
+  handleMouseUp: () => void;
   handleMouseMove: (e: MouseEvent<HTMLDivElement>) => void;
   handleZoomIn: (increment: number) => void;
   handleZoomOut: (increment: number) => void;
-  setSelectedElement: (id: string | null) => void;
 };
 
 type StartPan = Omit<Transform, "scale">;
@@ -52,19 +60,45 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   const [startPan, setStartPan] = useState<StartPan>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [elements, setElements] = useState<CanvasElement[]>([]);
-  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [selectedElement, setSelectedElement] = useState<CanvasElement | null>(
+    null,
+  );
+  const [isDraggingElement, setIsDraggingElement] = useState(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
 
   function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
     setStartPan({ x: e.clientX - transform.x, y: e.clientY - transform.y });
     setIsPanning(true);
   }
 
-  function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
-    if (!isPanning) return;
+  function handleMouseUp() {
+    setIsPanning(false);
+    setIsDraggingElement(false);
+  }
 
-    setTransform((prev) => {
-      return { ...prev, x: e.clientX - startPan.x, y: e.clientY - startPan.y };
-    });
+  function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
+    if (isDraggingElement && selectedElement) {
+      const newX =
+        (e.clientX - transform.x) / transform.scale - dragOffset.current.x;
+      const newY =
+        (e.clientY - transform.y) / transform.scale - dragOffset.current.y;
+      setElements((prev) =>
+        prev.map((el) =>
+          el.id === selectedElement.id ? { ...el, x: newX, y: newY } : el,
+        ),
+      );
+      setSelectedElement((prev) =>
+        prev ? { ...prev, x: newX, y: newY } : prev,
+      );
+      return;
+    }
+
+    if (!isPanning) return;
+    setTransform((prev) => ({
+      ...prev,
+      x: e.clientX - startPan.x,
+      y: e.clientY - startPan.y,
+    }));
   }
 
   function handleZoomIn(increment: number) {
@@ -94,6 +128,21 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     setElements((prev) => [...prev, element]);
   }
 
+  function handleElementMouseDown(
+    e: MouseEvent<HTMLDivElement>,
+    element: CanvasElement,
+  ) {
+    e.stopPropagation();
+    setSelectedElement(element);
+    setIsDraggingElement(true);
+
+    // Store the cursor offset relative to the elements position, adjusted for canvas transform
+    dragOffset.current = {
+      x: (e.clientX - transform.x) / transform.scale - element.x,
+      y: (e.clientY - transform.y) / transform.scale - element.y,
+    };
+  }
+
   return (
     <CanvasContext
       value={{
@@ -103,12 +152,14 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
         elements,
         selectedElement,
         handleMouseDown,
+        handleMouseUp,
         handleMouseMove,
         setIsPanning,
         handleZoomIn,
         handleZoomOut,
         handleAddElement,
         setSelectedElement,
+        handleElementMouseDown,
       }}
     >
       {children}
@@ -117,14 +168,14 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
 }
 
 export function CanvasArea({ children }: { children?: ReactNode }) {
-  const { handleMouseDown, handleMouseMove, setIsPanning, transform } =
+  const { handleMouseDown, handleMouseMove, handleMouseUp, transform } =
     useCanvasContext();
 
   return (
     <div
       className="relative h-full overflow-hidden bg-gray-100"
       onMouseDown={handleMouseDown}
-      onMouseUp={() => setIsPanning(false)}
+      onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
     >
       <div
@@ -164,13 +215,14 @@ export function CanvasElements() {
 }
 
 export function CanvasElementView({ element }: { element: CanvasElement }) {
-  const { selectedElement, setSelectedElement } = useCanvasContext();
+  const { selectedElement, setSelectedElement, handleElementMouseDown } =
+    useCanvasContext();
 
-  const isSelected = selectedElement === element.id;
+  const isSelected = selectedElement?.id === element.id;
 
   function handleSelect() {
     if (isSelected) return setSelectedElement(null);
-    setSelectedElement(element.id);
+    setSelectedElement(element);
   }
 
   return (
@@ -188,6 +240,7 @@ export function CanvasElementView({ element }: { element: CanvasElement }) {
         backgroundColor: element.colour,
       }}
       onClick={handleSelect}
+      onMouseDown={(e) => handleElementMouseDown(e, element)}
     >
       Rectangle
     </div>
