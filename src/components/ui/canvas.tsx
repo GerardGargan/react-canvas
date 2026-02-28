@@ -20,8 +20,6 @@ import { Button } from "./button";
 
 type CanvasContextType = {
   transform: Transform;
-  startPan: StartPan;
-  isPanning: boolean;
   elements: CanvasElement[];
   selectedElement: CanvasElement | null;
   handleAddElement: (elementType: CanvasElementType) => void;
@@ -32,7 +30,6 @@ type CanvasContextType = {
     e: MouseEvent<HTMLDivElement>,
     element: CanvasElement,
   ) => void;
-  setIsPanning: React.Dispatch<React.SetStateAction<boolean>>;
   handleMouseDown: (e: MouseEvent<HTMLDivElement>) => void;
   handleMouseUp: () => void;
   handleMouseMove: (e: MouseEvent<HTMLDivElement>) => void;
@@ -147,14 +144,11 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     <CanvasContext
       value={{
         transform,
-        startPan,
-        isPanning,
         elements,
         selectedElement,
         handleMouseDown,
         handleMouseUp,
         handleMouseMove,
-        setIsPanning,
         handleZoomIn,
         handleZoomOut,
         handleAddElement,
