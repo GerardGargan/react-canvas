@@ -8,7 +8,6 @@ import type {
 import { GrapeIcon, RectangleHorizontal, ZoomIn, ZoomOut } from "lucide-react";
 import {
   createContext,
-  useContext,
   type ComponentProps,
   type MouseEvent,
   type ReactNode,
@@ -16,6 +15,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { Button } from "./button";
 import useCanvas from "@/hooks/use-canvas";
+import useCanvasContext from "@/hooks/use-canvas-context";
 
 type CanvasContextType = {
   transform: Transform;
@@ -36,14 +36,7 @@ type CanvasContextType = {
   handleZoomOut: (increment: number) => void;
 };
 
-const CanvasContext = createContext<CanvasContextType | null>(null);
-
-function useCanvasContext() {
-  const context = useContext(CanvasContext);
-  if (!context)
-    throw new Error("useCanvasContext must be used inside a Canvas element");
-  return context;
-}
+export const CanvasContext = createContext<CanvasContextType | null>(null);
 
 export function CanvasProvider({ children }: { children: ReactNode }) {
   const {
