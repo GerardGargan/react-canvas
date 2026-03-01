@@ -5,6 +5,7 @@ import {
   CanvasElements,
   CanvasHeader,
   CanvasProvider,
+  CanvasSheet,
   CanvasToolbar,
   CanvasZoomInfo,
 } from "@/components/ui/canvas";
@@ -28,6 +29,7 @@ export default function Canvas() {
         <CanvasArea>
           <CanvasElements />
         </CanvasArea>
+        <CanvasSheet />
       </CanvasProvider>
     </div>
   );

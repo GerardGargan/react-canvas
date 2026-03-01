@@ -8,12 +8,14 @@ import type {
 import {
   Circle,
   GrapeIcon,
+  Pencil,
   RectangleHorizontal,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
 import {
   createContext,
+  type ChangeEvent,
   type ComponentProps,
   type MouseEvent,
   type ReactNode,
@@ -22,6 +24,17 @@ import { twMerge } from "tailwind-merge";
 import { Button } from "./button";
 import useCanvas from "@/hooks/use-canvas";
 import useCanvasContext from "@/hooks/use-canvas-context";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Label } from "./label";
+import { Input } from "./input";
 
 type CanvasContextType = {
   transform: Transform;
@@ -44,6 +57,10 @@ type CanvasContextType = {
     e: MouseEvent<HTMLDivElement>,
     element: CanvasElement,
   ) => void;
+  handleOpenSheet: (element: CanvasElement) => void;
+  handleCloseSheet: () => void;
+  isSheetOpen: boolean;
+  handleEditElement: (e: ChangeEvent<HTMLInputElement>) => void;
 };
 
 export const CanvasContext = createContext<CanvasContextType | null>(null);
@@ -62,6 +79,10 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     handleZoomOut,
     setSelectedElement,
     handleResizeElement,
+    handleOpenSheet,
+    handleCloseSheet,
+    handleEditElement,
+    isSheetOpen,
   } = useCanvas();
 
   return (
@@ -79,6 +100,10 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
         handleZoomOut,
         setSelectedElement,
         handleResizeElement,
+        handleCloseSheet,
+        handleOpenSheet,
+        handleEditElement,
+        isSheetOpen,
       }}
     >
       {children}
@@ -134,8 +159,12 @@ export function CanvasElements() {
 }
 
 export function CanvasElementView({ element }: { element: CanvasElement }) {
-  const { selectedElement, handleElementMouseDown, handleResizeElement } =
-    useCanvasContext();
+  const {
+    selectedElement,
+    handleElementMouseDown,
+    handleResizeElement,
+    handleOpenSheet,
+  } = useCanvasContext();
 
   const isSelected = selectedElement?.id === element.id;
 
@@ -162,11 +191,86 @@ export function CanvasElementView({ element }: { element: CanvasElement }) {
       {isSelected && (
         <div
           data-slot="resize-handle"
-          className="absolute right-[-8px] bottom-[-8px] w-4 h-4 bg-blue-500 rounded-full border-2 border-white cursor-nwse-resize"
+          className="absolute -right-2 -bottom-2 w-4 h-4 bg-blue-500 rounded-full border-2 border-white cursor-nwse-resize"
           onMouseDown={(e) => handleResizeElement(e, element)}
         />
       )}
+
+      {/* Edit button */}
+      {isSelected && (
+        <Button
+          variant="link"
+          className="absolute -top-8 -right-8"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenSheet(element);
+          }}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      )}
     </div>
+  );
+}
+
+export function CanvasSheet() {
+  const { selectedElement, isSheetOpen, handleCloseSheet, handleEditElement } =
+    useCanvasContext();
+  if (!selectedElement) return;
+
+  return (
+    <Sheet
+      open={selectedElement !== null && isSheetOpen}
+      onOpenChange={(open) => {
+        if (!open) handleCloseSheet();
+      }}
+    >
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Edit shape</SheetTitle>
+          <SheetDescription>Make changes to the shape here.</SheetDescription>
+        </SheetHeader>
+        <div className="grid gap-4 mt-4 px-4">
+          <Label>
+            Width:
+            <Input
+              type="number"
+              name="width"
+              value={selectedElement.width}
+              min={20}
+              className="border px-2 py-1 rounded ml-2"
+              onChange={handleEditElement}
+            />
+          </Label>
+          <Label>
+            Height:
+            <Input
+              type="number"
+              name="height"
+              value={selectedElement.height}
+              min={20}
+              className="border px-2 py-1 rounded ml-2"
+              onChange={handleEditElement}
+            />
+          </Label>
+          <Label>
+            Colour:
+            <input
+              type="color"
+              name="colour"
+              value={selectedElement.colour}
+              className="border px-2 py-1 rounded ml-2"
+              onChange={handleEditElement}
+            />
+          </Label>
+        </div>
+        <SheetFooter>
+          <SheetClose asChild>
+            <Button variant="outline">Close</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

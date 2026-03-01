@@ -3,7 +3,7 @@ import type {
   CanvasElementType,
   Transform,
 } from "@/types/canvas";
-import { useRef, useState, type MouseEvent } from "react";
+import { useRef, useState, type ChangeEvent, type MouseEvent } from "react";
 
 type StartPan = Omit<Transform, "scale">;
 
@@ -23,6 +23,7 @@ export default function useCanvas() {
   const [isResizing, setIsResizing] = useState(false);
   const resizeStart = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const dragOffset = useRef({ x: 0, y: 0 });
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
     if (selectedElement !== null) setSelectedElement(null);
@@ -165,6 +166,28 @@ export default function useCanvas() {
     };
   }
 
+  function handleOpenSheet(element: CanvasElement) {
+    setSelectedElement(element);
+    setIsSheetOpen(true);
+  }
+
+  function handleCloseSheet() {
+    setIsSheetOpen(false);
+  }
+
+  function handleEditElement(e: ChangeEvent<HTMLInputElement>) {
+    if (!selectedElement) return;
+    const { name, value, type } = e.target;
+    const newValue = type === "number" ? Number(value) : value;
+
+    setElements((prev) =>
+      prev.map((el) =>
+        el.id === selectedElement.id ? { ...el, [name]: newValue } : el,
+      ),
+    );
+    setSelectedElement((prev) => (prev ? { ...prev, [name]: newValue } : prev));
+  }
+
   return {
     handleAddElement,
     handleElementMouseDown,
@@ -175,6 +198,10 @@ export default function useCanvas() {
     handleZoomOut,
     setSelectedElement,
     handleResizeElement,
+    handleOpenSheet,
+    handleCloseSheet,
+    handleEditElement,
+    isSheetOpen,
     dragOffset,
     elements,
     transform,

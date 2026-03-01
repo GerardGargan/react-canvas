@@ -1,10 +1,10 @@
 import { Route, Routes } from "react-router";
-import Canvas from "./pages/canvas";
+import CanvasDemo from "./pages/canvasDemo";
 
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Canvas />} />
+      <Route path="/" element={<CanvasDemo />} />
       <Route path="*" element={<>Not found</>} />
     </Routes>
   );
