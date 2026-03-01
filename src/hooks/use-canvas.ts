@@ -23,6 +23,7 @@ export default function useCanvas() {
   const dragOffset = useRef({ x: 0, y: 0 });
 
   function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
+    if (selectedElement !== null) setSelectedElement(null);
     setStartPan({ x: e.clientX - transform.x, y: e.clientY - transform.y });
     setIsPanning(true);
   }

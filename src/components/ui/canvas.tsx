@@ -127,11 +127,6 @@ export function CanvasElementView({ element }: { element: CanvasElement }) {
 
   const isSelected = selectedElement?.id === element.id;
 
-  function handleSelect() {
-    if (isSelected) return setSelectedElement(null);
-    setSelectedElement(element);
-  }
-
   return (
     <div
       data-slot="canvas-element"
@@ -146,7 +141,6 @@ export function CanvasElementView({ element }: { element: CanvasElement }) {
         width: element.width,
         backgroundColor: element.colour,
       }}
-      onClick={handleSelect}
       onMouseDown={(e) => handleElementMouseDown(e, element)}
     >
       Rectangle
