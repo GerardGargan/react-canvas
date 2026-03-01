@@ -20,6 +20,8 @@ export default function useCanvas() {
     null,
   );
   const [isDraggingElement, setIsDraggingElement] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStart = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const dragOffset = useRef({ x: 0, y: 0 });
 
   function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
@@ -31,9 +33,11 @@ export default function useCanvas() {
   function handleMouseUp() {
     setIsPanning(false);
     setIsDraggingElement(false);
+    setIsResizing(false);
   }
 
   function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
+    // Handles moving an element on drag
     if (isDraggingElement && selectedElement) {
       const newX =
         (e.clientX - transform.x) / transform.scale - dragOffset.current.x;
@@ -46,6 +50,30 @@ export default function useCanvas() {
       );
       setSelectedElement((prev) =>
         prev ? { ...prev, x: newX, y: newY } : prev,
+      );
+      return;
+    }
+
+    // Handles resizing an element
+    if (isResizing && selectedElement) {
+      const mouseX = (e.clientX - transform.x) / transform.scale;
+      const mouseY = (e.clientY - transform.y) / transform.scale;
+
+      const deltaX = mouseX - resizeStart.current.x;
+      const deltaY = mouseY - resizeStart.current.y;
+
+      const newWidth = Math.max(20, resizeStart.current.width + deltaX);
+      const newHeight = Math.max(20, resizeStart.current.height + deltaY);
+
+      setElements((prev) =>
+        prev.map((el) =>
+          el.id === selectedElement.id
+            ? { ...el, width: newWidth, height: newHeight }
+            : el,
+        ),
+      );
+      setSelectedElement((prev) =>
+        prev ? { ...prev, width: newWidth, height: newHeight } : prev,
       );
       return;
     }
@@ -121,6 +149,22 @@ export default function useCanvas() {
     };
   }
 
+  function handleResizeElement(
+    e: MouseEvent<HTMLDivElement>,
+    element: CanvasElement,
+  ) {
+    e.stopPropagation();
+    setIsResizing(true);
+
+    // Store the starting mouse position and element size
+    resizeStart.current = {
+      x: (e.clientX - transform.x) / transform.scale,
+      y: (e.clientY - transform.y) / transform.scale,
+      width: element.width,
+      height: element.height,
+    };
+  }
+
   return {
     handleAddElement,
     handleElementMouseDown,
@@ -130,6 +174,7 @@ export default function useCanvas() {
     handleZoomIn,
     handleZoomOut,
     setSelectedElement,
+    handleResizeElement,
     dragOffset,
     elements,
     transform,

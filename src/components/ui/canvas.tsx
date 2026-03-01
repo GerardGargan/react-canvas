@@ -40,6 +40,10 @@ type CanvasContextType = {
   handleMouseMove: (e: MouseEvent<HTMLDivElement>) => void;
   handleZoomIn: (increment: number) => void;
   handleZoomOut: (increment: number) => void;
+  handleResizeElement: (
+    e: MouseEvent<HTMLDivElement>,
+    element: CanvasElement,
+  ) => void;
 };
 
 export const CanvasContext = createContext<CanvasContextType | null>(null);
@@ -57,6 +61,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     handleZoomIn,
     handleZoomOut,
     setSelectedElement,
+    handleResizeElement,
   } = useCanvas();
 
   return (
@@ -73,6 +78,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
         handleElementMouseDown,
         handleZoomOut,
         setSelectedElement,
+        handleResizeElement,
       }}
     >
       {children}
@@ -128,7 +134,8 @@ export function CanvasElements() {
 }
 
 export function CanvasElementView({ element }: { element: CanvasElement }) {
-  const { selectedElement, handleElementMouseDown } = useCanvasContext();
+  const { selectedElement, handleElementMouseDown, handleResizeElement } =
+    useCanvasContext();
 
   const isSelected = selectedElement?.id === element.id;
 
@@ -147,9 +154,19 @@ export function CanvasElementView({ element }: { element: CanvasElement }) {
         backgroundColor: element.colour,
         border: element.border,
         borderRadius: element.borderRadius,
+        position: "absolute",
       }}
       onMouseDown={(e) => handleElementMouseDown(e, element)}
-    ></div>
+    >
+      {/* Resize Handle */}
+      {isSelected && (
+        <div
+          data-slot="resize-handle"
+          className="absolute right-[-8px] bottom-[-8px] w-4 h-4 bg-blue-500 rounded-full border-2 border-white cursor-nwse-resize"
+          onMouseDown={(e) => handleResizeElement(e, element)}
+        />
+      )}
+    </div>
   );
 }
 
