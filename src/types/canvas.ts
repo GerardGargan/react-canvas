@@ -4,7 +4,7 @@ export type Transform = {
   scale: number;
 };
 
-export type CanvasElementType = "Rectangle";
+export type CanvasElementType = "Rectangle" | "Circle";
 
 export type CanvasElement = {
   id: string;
@@ -14,4 +14,6 @@ export type CanvasElement = {
   width: number;
   height: number;
   colour: string;
+  border: string;
+  borderRadius: string;
 };

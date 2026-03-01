@@ -73,15 +73,36 @@ export default function useCanvas() {
   }
 
   function handleAddElement(elementType: CanvasElementType) {
-    const element: CanvasElement = {
-      id: Math.random().toString(36).substring(2, 9),
-      colour: "white",
-      height: 100,
-      width: 200,
-      elementType,
-      x: 500,
-      y: 500,
-    };
+    let element: CanvasElement | null = null;
+    switch (elementType) {
+      case "Rectangle":
+        element = {
+          id: Math.random().toString(36).substring(2, 9),
+          colour: "white",
+          height: 100,
+          width: 200,
+          border: "2px solid grey",
+          borderRadius: "6px",
+          elementType,
+          x: 500,
+          y: 500,
+        };
+        break;
+      case "Circle":
+        element = {
+          id: Math.random().toString(36).substring(2, 9),
+          colour: "white",
+          height: 100,
+          width: 100,
+          border: "2px solid grey",
+          borderRadius: "50%",
+          elementType,
+          x: 500,
+          y: 500,
+        };
+        break;
+    }
+    if (!element) throw new Error("Error adding element");
     setElements((prev) => [...prev, element]);
   }
 

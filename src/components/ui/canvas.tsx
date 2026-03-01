@@ -5,7 +5,13 @@ import type {
   CanvasElementType,
   Transform,
 } from "@/types/canvas";
-import { GrapeIcon, RectangleHorizontal, ZoomIn, ZoomOut } from "lucide-react";
+import {
+  Circle,
+  GrapeIcon,
+  RectangleHorizontal,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 import {
   createContext,
   type ComponentProps,
@@ -122,8 +128,7 @@ export function CanvasElements() {
 }
 
 export function CanvasElementView({ element }: { element: CanvasElement }) {
-  const { selectedElement, setSelectedElement, handleElementMouseDown } =
-    useCanvasContext();
+  const { selectedElement, handleElementMouseDown } = useCanvasContext();
 
   const isSelected = selectedElement?.id === element.id;
 
@@ -131,7 +136,7 @@ export function CanvasElementView({ element }: { element: CanvasElement }) {
     <div
       data-slot="canvas-element"
       className={twMerge(
-        "absolute border-2 rounded-xl z-1 p-1",
+        "absolute z-1 p-1",
         isSelected && "ring-2 ring-blue-500",
       )}
       style={{
@@ -140,11 +145,11 @@ export function CanvasElementView({ element }: { element: CanvasElement }) {
         height: element.height,
         width: element.width,
         backgroundColor: element.colour,
+        border: element.border,
+        borderRadius: element.borderRadius,
       }}
       onMouseDown={(e) => handleElementMouseDown(e, element)}
-    >
-      Rectangle
-    </div>
+    ></div>
   );
 }
 
@@ -191,6 +196,9 @@ export function CanvasToolbar() {
     >
       <Button variant="ghost" onClick={() => handleAddElement("Rectangle")}>
         <RectangleHorizontal />
+      </Button>
+      <Button variant="ghost" onClick={() => handleAddElement("Circle")}>
+        <Circle />
       </Button>
       <Separator orientation="vertical" />
       <Button variant="ghost" onClick={() => handleZoomIn(0.1)}>
